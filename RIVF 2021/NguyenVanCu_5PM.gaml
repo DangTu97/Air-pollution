@@ -1,21 +1,21 @@
 /***
-* Name: example
+* Name: NguyenVanCu5PM
 * Author: dang tu
-* Description: study case of Nguyen Van Cu traffic road coupled with emission model
-* Tags: Tag1, Tag2, TagN
+* Description: simulation at 5pm on Nguyen Van Cu road with data information:
+* traffic flow: 2.25 vehicle/s
+* 68.5 % motorbike, 27% car 1.5% bus, 3% truck 
+* Tags: air pollution simulation
 ***/
 
-model example
-import "traffic.gaml"
-/* Insert your model definition here */
+model NguyenVanCu5PM
+import "../models/traffic.gaml"
 
+/* Insert your model definition here */
 global {
-	file shape_file_roads <- file("../includes/roads.shp");
-	file shape_file_buildings <- file("../includes/buildings.shp");
-	file shape_file_boundary <- file("../includes/boundary.shp");
 	graph road_network;
-	geometry shape <- envelope(shape_file_roads) + 50;
+	geometry shape <- envelope(shape_file_buildings) + 10;
 	float step <- STEP;
+	int every_cycle <- 9; // indicates traffic volume
 	
 	init {
 		create building from: shape_file_buildings;
@@ -26,26 +26,26 @@ global {
 		}
 		road_network <- as_edge_graph(road);
 		loop vertex over: road_network.vertices {
-			create roadNode {
-				location <- vertex;
-			}
+			create roadNode { location <- vertex; }
 		}
 		
 		create Sensor number: 1 {
-			location <- one_of(road_network.vertices);
+			location <- building(10).location - {10,13};
 		}
 	}
 	
-	reflex init_traffic when: mod(cycle,10) = 0 {
+	reflex init_traffic when: mod(cycle,every_cycle) = 0 {
 		create vehicle number: 1 {
-			type <- flip(0.3) ? one_of(['CAR', 'CAR', 'CAR', 'CAR', 'TRUCK', 'TRUCK', 'BUS']) : 'MOTORBIKE';
+			int k <- rnd(1,100);
+			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
 			source_node <- roadNode(12).location;
 			final_node <- roadNode(15).location;
 			do set_type;
 		}
 		
 		create vehicle number:1 {
-			type <- flip(0.3) ? one_of(['CAR', 'CAR', 'CAR', 'CAR', 'TRUCK', 'TRUCK', 'BUS']) : 'MOTORBIKE';
+			int k <- rnd(1,100);
+			type <- (k < 68.5) ? 'MOTORBIKE': ((k < 95.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
 			source_node <- roadNode(14).location;
 			final_node <- roadNode(13).location;
 			do set_type;
@@ -66,11 +66,13 @@ experiment my_experiment {
 		}
 		
 		display chart refresh: every(20#cycle) {
-			chart "Number of vehicles" type:series {
-				data "Vehicles" value: length(Emis);
+			chart "Number of pollutants" type:series {
+				data "Pollutants" value: length(Emis);
 			}
 		}
-//		monitor "Number of Emis:" value: length(Emis);
-//		monitor "Number of Vehicles:" value: length(vehicle);
+		
+		monitor "CO AQI_h: " value: Sensor(0).CO_aqi;
+		monitor "NOx AQI_h: " value: Sensor(0).NOx_aqi;
+		monitor "SO2 AQI_h: " value: Sensor(0).SO2_aqi;
 	}
 }

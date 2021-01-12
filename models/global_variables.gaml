@@ -90,4 +90,17 @@ global {
 	float MOTORBIKE_SAFESPEED_MALE <- 8.9 #m/#s;
 	float MOTORBIKE_SAFESPEED_FEMALE <- 8.3 #m/#s;
 	float PROB_MAXSPEED_SAFESPEED <- 0.5;
+	
+	file shape_file_roads <- file("../includes/roads.shp");
+	file shape_file_buildings <- file("../includes/buildings.shp");
+	file shape_file_boundary <- file("../includes/boundary.shp");
+	
+	// distance to get pollutant
+	float DISTANCE_RANGE <- 5.0#m;
+	
+	// hourly AQI 
+	list<int> I <- [0, 50,100,150,200,300,400,500];
+	list<float> CO_BP <- [0, 10.0, 30.0, 45.0, 60.0, 90.0, 120.0, 150.0]; // mg/m3
+	list<float> NOx_BP <- [0, 0.1, 0.2, 0.7, 1.2, 2.35, 3.1, 3.85]; // mg/m3
+	list<float> SO2_BP <- [0.0, 0.125, 0.35, 0.55, 0.8, 1.6, 2.1, 2.63]; // mg/m3
 }

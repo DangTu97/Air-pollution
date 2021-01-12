@@ -72,7 +72,7 @@ species road {
 
 species building {
 	aspect base {
-		draw shape color: #green depth: rnd(3.0,8.0);
+		draw shape color: #grey depth: rnd(3.0,8.0);
 	}
 }
 
