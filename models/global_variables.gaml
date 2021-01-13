@@ -14,7 +14,8 @@ global {
 	float STEP <- 0.05 #s;
 	float TIME_STEP <- 0.05 #s;
 	float EVIRONMENT_SIZE <- 300.0;
-	list<image_file> IMAGES <- [image_file("../includes/car.png"), image_file("../includes/motorbike.png"), image_file("../includes/bus.jpg")];
+	list<image_file> IMAGES <- [image_file("../includes/car.png"), image_file("../includes/motorbike.png"),
+								image_file("../includes/bus.jpg"), image_file("../includes/truck.jpg")];
 	
 	// attributes of road
 	float ROAD_WIDTH <- 8.0;
@@ -64,15 +65,6 @@ global {
 	float INIT_SPEED <- 8 #m/#s;
 	float PROB_GO_OPPOSITE <- 0.0;
 	float PROB_TURN_RIGHT <- 1.0;
-	
-	// percent of car 
-	float CAR_PERCENT <- 0.2;
-	
-	// diffusion of emission variables
-	float wind_speed <- 0.0#m/#s;
-	float wind_dir <- 30.0;
-	
-	int EMIS_DURATION <- 100; //cycle
  
 	// emission factor g/km -> mg/m
 	map<string, float> EF_CO <- ['CAR' :: 3.62, 'MOTORBIKE' :: 3.62, 'BUS' :: 3.1, 'TRUCK':: 2.75];
@@ -80,23 +72,13 @@ global {
 	map<string, float> EF_SO2 <- ['CAR' :: 0.17, 'MOTORBIKE' :: 0.03, 'BUS' :: 0.64, 'TRUCK':: 0.4];
 	map<string, float> EF_PTM <- ['CAR' :: 0.1, 'MOTORBIKE' :: 0.1, 'BUS' :: 1.5, 'TRUCK':: 0.8];
 	
-	// depower_coeff
-//	float depower_coeff <- 0.1;
-	map<string, float> DEPOWER_FACTOR <- ['CO'::3, 'NOx'::0.5, 'SO2'::0.1, 'PTM'::0.2];
-		
-	// parameter
-	float CAR_SAFESPEED_MALE <- 11.1 #m/#s;
-	float CAR_SAFESPEED_FEMALE <- 10.0 #m/#s;
-	float MOTORBIKE_SAFESPEED_MALE <- 8.9 #m/#s;
-	float MOTORBIKE_SAFESPEED_FEMALE <- 8.3 #m/#s;
-	float PROB_MAXSPEED_SAFESPEED <- 0.5;
-	
 	file shape_file_roads <- file("../includes/roads.shp");
 	file shape_file_buildings <- file("../includes/buildings.shp");
-	file shape_file_boundary <- file("../includes/boundary.shp");
+	file shape_file_boundary <- file("../includes/boundary2.shp");
 	
 	// distance to get pollutant
-	float DISTANCE_RANGE <- 5.0#m;
+	float DISTANCE_RANGE <- 4.0#m;
+	int EMIS_DURATION <- 100; //#cycle, 20#cycle is 1#s
 	
 	// hourly AQI 
 	list<int> I <- [0, 50,100,150,200,300,400,500];

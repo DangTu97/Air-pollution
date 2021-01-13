@@ -24,10 +24,12 @@ species Emis skills: [moving]{
 	map<string, rgb> col <- ['CO'::#red, 'NOx'::#blue, 'SO2'::#orange, 'PTM'::#gray];
 	vehicle root;
 	float power <- 1.0;
-	float diff_speed <- 500#m/#s;
-	float starting_heading;
-	float starting_speed <- 5#m/#s;
 	float back_coeff <- 1.0;
+	float diff_speed <- 20#m/#s;
+	float starting_speed <- 10#m/#s;
+	float starting_heading;
+	float wind_speed <- 5.0#m/#s;
+	float wind_dir <- 90.0;
 	
 	reflex move{
 		// moving by affect of engine
@@ -53,7 +55,7 @@ species Emis skills: [moving]{
 	}	
 }
 
-species Sensor{
+species Sensor {
 	map<string, float> allowed_amount <- ['CO'::150.0 * DISTANCE_RANGE, 
 	'NOx'::3.85*DISTANCE_RANGE, 'SO2'::2.63*DISTANCE_RANGE, 'PTM'::0.6*DISTANCE_RANGE]; // mg/(DISTANCE_RANGE m3)
 	map<string, float> pollution_value <- ['CO'::0.0, 'NOx'::0.0, 'SO2'::0.0, 'PTM'::0.0];
@@ -66,6 +68,12 @@ species Sensor{
 	int SO2_aqi;
 	int NOx_aqi;
 	int PTM_aqi;
+	
+	// average AQI
+	int CO_average <- 0;
+	int NOx_average <- 0;
+	int SO2_average <- 0;
+	int count <- 0;
 	
 	int compute_index (float value, list<float> BP) {
 		int index;
@@ -80,6 +88,8 @@ species Sensor{
 		pollution_value <- ['CO'::0.0, 'NOx'::0.0, 'SO2'::0.0, 'PTM'::0.0];
 		Emis_surrounding <- (Emis where (distance_to(each.location, self.location) < DISTANCE_RANGE));
 		loop emis over: Emis_surrounding {
+			write Emis_surrounding;
+			write emis.power;
 			pollution_value[emis.type] <- pollution_value[emis.type] + emis.power;
 		}
 		
@@ -88,17 +98,13 @@ species Sensor{
 		
 		// update aqi
 		// convert amount of pollutants at DISTANCE_RANGE m3 to m3;
-		float standard_CO <- pollution_value['CO']/DISTANCE_RANGE; 
-		float standard_NOx <- pollution_value['NOx']/DISTANCE_RANGE; 
-		float standard_SO2 <- pollution_value['SO2']/DISTANCE_RANGE; 
+		float standard_CO <- pollution_value['CO']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+		float standard_NOx <- pollution_value['NOx']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+		float standard_SO2 <- pollution_value['SO2']/(3.142*DISTANCE_RANGE^3)*(4/3); 
 		
 		int CO_index <- compute_index(standard_CO, CO_BP);
 		int NOx_index <- compute_index(standard_NOx, NOx_BP);
 		int SO2_index <- compute_index(standard_SO2, SO2_BP);
-		write "---";
-		write CO_index;
-		write NOx_index;
-		write SO2_index;
 		
 		CO_aqi <- CO_index = length(CO_BP) - 1 ? 500 : (I[CO_index + 1] - I[CO_index])*
 			(standard_CO - CO_BP[CO_index])/(CO_BP[CO_index + 1] - CO_BP[CO_index]) + I[CO_index] as int;
@@ -107,10 +113,14 @@ species Sensor{
 		SO2_aqi <- SO2_index = length(SO2_BP) - 1 ? 500 : (I[SO2_index + 1] - I[SO2_index])*
 			(standard_SO2 - SO2_BP[SO2_index])/(SO2_BP[SO2_index + 1] - SO2_BP[SO2_index]) + I[SO2_index] as int;
 		
+		count <- count + 1;
+		CO_average <- ((count - 1)*CO_average + CO_aqi)/count as int;
+		NOx_average <- ((count - 1)*NOx_average + NOx_aqi)/count as int;
+		SO2_average <- ((count - 1)*SO2_average + SO2_aqi)/count as int;
 	}
 	
 	aspect default{
-		draw circle(5#m) color: color;
+		draw circle(DISTANCE_RANGE#m) color: color;
 	}
 }
 

@@ -689,26 +689,6 @@ species vehicle skills:[moving] {
 		do update_polygon;
 	}
 	
-	// action create new emisson
-	action creEmis(int _nb, string _type, float pw /*, float diff, float sts*/){
-		create Emis number: _nb{
-			root <- myself;
-			type <- _type;
-			power <- pw;
-			starting_heading <- -self.heading;
-			//diff_speed <- diff;
-			//starting_speed <- sts;
-			location <- myself.location;
-		}
-	}
-	
-//	reflex release_emission when: mod(cycle,20) = emis_mod{
-//		do creEmis(RCO[self.type], 'CO', 1.0);
-//		do creEmis(RNOx[self.type], 'NOx', 1.0);
-//		do creEmis(RSO2[self.type], 'SO2', 1.0);
-//		do creEmis(RPTM[self.type], 'PTM', 1.0);
-//	}
-
 	action produce_emis(float _power, string _type){
 		create Emis number: 1 {
 			root <- myself;
