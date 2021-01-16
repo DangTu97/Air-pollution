@@ -37,8 +37,7 @@ global {
 	reflex init_traffic when: mod(cycle,every_cycle) = 0 {
 		create vehicle number: 1 {
 			int k <- rnd(1,100);
-//			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
-			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['MOTORBIKE']));
+			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
 			source_node <- roadNode(12).location;
 			final_node <- roadNode(15).location;
 			do set_type;
@@ -46,8 +45,7 @@ global {
 		
 		create vehicle number:1 {
 			int k <- rnd(1,100);
-//			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
-			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['MOTORBIKE']));
+			type <- (k < 67.5) ? 'MOTORBIKE': ((k < 93.5) ? 'CAR': one_of(['TRUCK', 'TRUCK', 'BUS']));
 			source_node <- roadNode(14).location;
 			final_node <- roadNode(13).location;
 			do set_type;
@@ -69,16 +67,16 @@ experiment my_experiment {
 		
 		display chart refresh: every(20#cycle) {
 			chart "AQI" type:series {
-//				data "Pollutants" value: length(Emis);
 				data "CO" value: Sensor(0).CO_average;
 				data "NOx" value: Sensor(0).NOx_average;
 				data "SO2" value: Sensor(0).SO2_average;
+				data "PTM" value: Sensor(0).PTM_average;
 			}
 		}
 		
-		monitor "Emis" value: length(Emis);
-		monitor "CO AQI_h: " value: Sensor(0).CO_aqi;
-		monitor "NOx AQI_h: " value: Sensor(0).NOx_aqi;
-		monitor "SO2 AQI_h: " value: Sensor(0).SO2_aqi;
+		monitor "CO" value: Sensor(0).CO_average;
+		monitor "NOx" value: Sensor(0).NOx_average;
+		monitor "SO2" value: Sensor(0).SO2_average;
+		monitor "PTM" value: Sensor(0).PTM_average;
 	}
 }

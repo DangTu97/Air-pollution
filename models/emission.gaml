@@ -25,10 +25,10 @@ species Emis skills: [moving]{
 	vehicle root;
 	float power <- 1.0;
 	float back_coeff <- 1.0;
-	float diff_speed <- 20#m/#s;
-	float starting_speed <- 10#m/#s;
+	float diff_speed <- 2#m/#s;
+	float starting_speed <- 5#m/#s;
 	float starting_heading;
-	float wind_speed <- 5.0#m/#s;
+	float wind_speed <- 2.0#m/#s;
 	float wind_dir <- 90.0;
 	
 	reflex move{
@@ -70,9 +70,10 @@ species Sensor {
 	int PTM_aqi;
 	
 	// average AQI
-	int CO_average <- 0;
-	int NOx_average <- 0;
-	int SO2_average <- 0;
+	float CO_average <- 0.0;
+	float NOx_average <- 0.0;
+	float SO2_average <- 0.0;
+	float PTM_average <- 0.0;
 	int count <- 0;
 	
 	int compute_index (float value, list<float> BP) {
@@ -84,39 +85,50 @@ species Sensor {
 		return index;
 	}
 	
-	reflex sensing when: mod(cycle, 20) = 0{
+	reflex sensing when: (mod(cycle, 20) = 0) and (cycle > 400) {
 		pollution_value <- ['CO'::0.0, 'NOx'::0.0, 'SO2'::0.0, 'PTM'::0.0];
 		Emis_surrounding <- (Emis where (distance_to(each.location, self.location) < DISTANCE_RANGE));
 		loop emis over: Emis_surrounding {
-			write Emis_surrounding;
-			write emis.power;
-			pollution_value[emis.type] <- pollution_value[emis.type] + emis.power;
-		}
+			pollution_value[emis.type] <- pollution_value[emis.type] + emis.power as int;
+		}		
 		
-		density <- (min(1, pollution_value['CO'] / allowed_amount['CO']) + min(1, pollution_value['NOx'] / allowed_amount["NOx"]) + 
-				min(1, pollution_value['SO2'] / allowed_amount["SO2"]) + min(1, pollution_value['PTM'] / allowed_amount["PTM"])) / 4;
+//		density <- (min(1, pollution_value['CO'] / allowed_amount['CO']) + min(1, pollution_value['NOx'] / allowed_amount["NOx"]) + 
+//				min(1, pollution_value['SO2'] / allowed_amount["SO2"]) + min(1, pollution_value['PTM'] / allowed_amount["PTM"])) / 4;
+//		
+//		// update aqi
+//		// convert amount of pollutants at DISTANCE_RANGE m3 to m3;
+//		float standard_CO <- pollution_value['CO']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+//		float standard_NOx <- pollution_value['NOx']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+//		float standard_SO2 <- pollution_value['SO2']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+//		
+//		int CO_index <- compute_index(standard_CO, CO_BP);
+//		int NOx_index <- compute_index(standard_NOx, NOx_BP);
+//		int SO2_index <- compute_index(standard_SO2, SO2_BP);
+//		
+//		CO_aqi <- CO_index = length(CO_BP) - 1 ? 500 : (I[CO_index + 1] - I[CO_index])*
+//			(standard_CO - CO_BP[CO_index])/(CO_BP[CO_index + 1] - CO_BP[CO_index]) + I[CO_index] as int;
+//		NOx_aqi <- NOx_index = length(NOx_BP) - 1 ? 500 : (I[NOx_index + 1] - I[NOx_index])*
+//			(standard_NOx - NOx_BP[NOx_index])/(NOx_BP[NOx_index + 1] - NOx_BP[NOx_index]) + I[NOx_index] as int;
+//		SO2_aqi <- SO2_index = length(SO2_BP) - 1 ? 500 : (I[SO2_index + 1] - I[SO2_index])*
+//			(standard_SO2 - SO2_BP[SO2_index])/(SO2_BP[SO2_index + 1] - SO2_BP[SO2_index]) + I[SO2_index] as int;
 		
-		// update aqi
-		// convert amount of pollutants at DISTANCE_RANGE m3 to m3;
-		float standard_CO <- pollution_value['CO']/(3.142*DISTANCE_RANGE^3)*(4/3); 
-		float standard_NOx <- pollution_value['NOx']/(3.142*DISTANCE_RANGE^3)*(4/3); 
-		float standard_SO2 <- pollution_value['SO2']/(3.142*DISTANCE_RANGE^3)*(4/3); 
+//		count <- count + 1;
+//		CO_average <- ((count - 1)*CO_average + CO_aqi)/count as int;
+//		NOx_average <- ((count - 1)*NOx_average + NOx_aqi)/count as int;
+//		SO2_average <- ((count - 1)*SO2_average + SO2_aqi)/count as int;
 		
-		int CO_index <- compute_index(standard_CO, CO_BP);
-		int NOx_index <- compute_index(standard_NOx, NOx_BP);
-		int SO2_index <- compute_index(standard_SO2, SO2_BP);
-		
-		CO_aqi <- CO_index = length(CO_BP) - 1 ? 500 : (I[CO_index + 1] - I[CO_index])*
-			(standard_CO - CO_BP[CO_index])/(CO_BP[CO_index + 1] - CO_BP[CO_index]) + I[CO_index] as int;
-		NOx_aqi <- NOx_index = length(NOx_BP) - 1 ? 500 : (I[NOx_index + 1] - I[NOx_index])*
-			(standard_NOx - NOx_BP[NOx_index])/(NOx_BP[NOx_index + 1] - NOx_BP[NOx_index]) + I[NOx_index] as int;
-		SO2_aqi <- SO2_index = length(SO2_BP) - 1 ? 500 : (I[SO2_index + 1] - I[SO2_index])*
-			(standard_SO2 - SO2_BP[SO2_index])/(SO2_BP[SO2_index + 1] - SO2_BP[SO2_index]) + I[SO2_index] as int;
-		
+		float h <- 5.0 #m;
+		float standard_CO <- pollution_value['CO']/(3.142*h*DISTANCE_RANGE^2); 
+		float standard_NOx <- pollution_value['NOx']/(3.142*h*DISTANCE_RANGE^2); 
+		float standard_SO2 <- pollution_value['SO2']/(3.142*h*DISTANCE_RANGE^2); 
+		float standard_PTM <- pollution_value['PTM']/(3.142*h*DISTANCE_RANGE^2); 
+//		write standard_CO;
 		count <- count + 1;
-		CO_average <- ((count - 1)*CO_average + CO_aqi)/count as int;
-		NOx_average <- ((count - 1)*NOx_average + NOx_aqi)/count as int;
-		SO2_average <- ((count - 1)*SO2_average + SO2_aqi)/count as int;
+		CO_average <- ((count - 1)*CO_average + standard_CO)/count;
+		NOx_average <- ((count - 1)*NOx_average + standard_NOx)/count;
+		SO2_average <- ((count - 1)*SO2_average + standard_SO2)/count;
+		PTM_average <- ((count - 1)*PTM_average + standard_PTM)/count;
+//		write CO_average;
 	}
 	
 	aspect default{
